@@ -22,8 +22,8 @@ def get_books(db: Session = Depends(get_db)):
 @router.get("/search_books", response_model=List[BookSearch])
 def search_books(search: BookSearch, db: Session = Depends(get_db)):
     query = db.query(Book)
-    if search.title:
-        query = query.filter(Book.book_title.ilike(f"%{search.title}%"))
+    if search.book_title:
+        query = query.filter(Book.book_title.ilike(f"%{search.book_title}%"))
     if search.author:
         query = query.filter(Book.author.ilike(f"%{search.author}%"))
     return query.all()
@@ -37,8 +37,8 @@ def get_book_detail(book_id: int, db: Session = Depends(get_db)):
     return book
 
 # 도서 대여 기능
-@router.post("/borrow_book/{book_id}")
-def borrow_book(book_id: int, db: Session = Depends(get_db)):
+@router.post("/rantal_book/{book_id}")
+def rantal_book(book_id: int, db: Session = Depends(get_db)):
     book = db.query(Book).filter(Book.book_id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="존재하지 않는 도서입니다.")
