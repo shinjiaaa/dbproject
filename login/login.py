@@ -1,19 +1,19 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
 from models import User
-from app import get_db
+from database import get_db
 from pydantic import BaseModel
 
 router = APIRouter()
 
 # login
 class LoginData(BaseModel):
-    username: str
+    name: str
     password: str
 
 @router.post("/login")
 async def login(data: LoginData, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.username == data.username).first()
+    user = db.query(User).filter(User.name == data.name).first()
     
     if user and user.password == data.password:
         return {"message": "로그인 성공", "status": "success"}
