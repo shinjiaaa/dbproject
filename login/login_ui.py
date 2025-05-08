@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import messagebox
+import requests
 
 # 메인 윈도우 설정
 root = tk.Tk()
@@ -23,12 +24,17 @@ def login_page():
     def login_action():
         user_id = login_id_entry.get()
         password = password_entry.get()
-        # 여기에 실제 로그인 요청 넣을 수 있음
-        if user_id == "admin" and password == "1234":
-            messagebox.showinfo("성공", "로그인 성공")
-            main_menu_page()
-        else:
-            messagebox.showerror("오류", "아이디 또는 비밀번호가 틀렸습니다.")
+
+        data = {"name": user_id, "password": password}
+        try:
+            response = requests.post("http://localhost:8000/login", json=data)
+            if response.status_code == 200:
+                messagebox.showinfo("성공", response.json()["message"])
+                main_menu_page()
+            else:
+                messagebox.showerror("오류", response.json()["detail"])
+        except Exception as e:
+            messagebox.showerror("서버 오류", f"연결 실패: {e}")
 
     tk.Button(root, text="로그인", command=login_action).pack(pady=5)
     tk.Button(root, text="회원가입", command=register_page).pack(pady=2)
@@ -56,8 +62,7 @@ def register_page():
     pw_entry.pack()
 
     def complete_register():
-        # 실제 서버 전송 로직 대신 UI 팝업만 사용
-        messagebox.showinfo("회원가입", "회원가입이 완료되었습니다.")
+        messagebox.showinfo("회원가입", "회원가입이 완료되었습니다.")  # 추후 서버 연동 가능
         login_page()
 
     tk.Button(root, text="완료", command=complete_register).pack(pady=5)
@@ -78,5 +83,4 @@ def clear_widgets():
 
 # 프로그램 시작 시 로그인 화면부터
 login_page()
-
 root.mainloop()
