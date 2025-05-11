@@ -27,7 +27,7 @@ class Book(Base):
     book_title = Column(String, index=True)
     author = Column(String)
     year = Column(Integer)
-    rental_status = Column(String)
+    rental_status = Column(Boolean)
     library_location = Column(String)
 
     # 관계 (Book -> Service -> User)

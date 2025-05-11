@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from models import User
 from database import get_db
 from pydantic import BaseModel
+from passlib.context import CryptContext
 
 router = APIRouter()
 
@@ -30,3 +31,30 @@ async def register(data: RegisterData, db: Session = Depends(get_db)):
     db.refresh(new_user)
 
     return {"message": "회원가입 성공", "status": "success"}
+
+# 패스워드 암호화
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
+
+@router.post("/admin_signup")
+def create_admin_user(name: str, login_id: str, password: str, db: Session = Depends(get_db)):
+    # 로그인 아이디가 이미 존재하는지 확인
+    db_user = db.query(User).filter(User.login_id == login_id).first()
+    if db_user:
+        raise HTTPException(status_code=400, detail="Login ID already exists")
+    
+    # 패스워드 암호화
+    hashed_password = pwd_context.hash(password)
+    
+    # 어드민 생성
+    new_user = User(
+        name=name,
+        login_id=login_id,
+        password=hashed_password,
+        admin=True  # 어드민 필드 설정
+    )
+    
+    db.add(new_user)
+    db.commit()
+    db.refresh(new_user)
+    return {"message": "Admin user created successfully", "user_id": new_user.user_id}
+

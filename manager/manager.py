@@ -1,8 +1,10 @@
 from fastapi import APIRouter, HTTPException, Depends
 from sqlalchemy.orm import Session
-from models import User, Book
+from models import Service, User, Book
 from database import get_db
 from pydantic import BaseModel
+
+from mypage.mypage import get_current_user
 
 router = APIRouter()
 
@@ -10,7 +12,7 @@ class BookData(BaseModel):
     book_title: str
     author: str
     year: int
-    rental_status: str
+    rental_status: bool
     library_location: str
 
 class BlacklistData(BaseModel):
@@ -41,6 +43,17 @@ async def delete_book(book_id: int, db: Session = Depends(get_db)):
     db.delete(book)
     db.commit()
     return {"message": "도서 삭제 완료"}
+
+# 도서 반납
+@router.post("/return_book/{service_id}")
+def return_book(service_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    service = db.query(Service).filter(Service.service_id == service_id, Service.user_id == current_user.user_id).first()
+    if not service:
+        raise HTTPException(status_code=404, detail="Service not found")
+    book = db.query(Book).filter(Book.book_id == service.book_id).first()
+    book.rental_status = True
+    db.commit()
+    return {"message": "반납 완료"}
 
 # 고객 정보 조회
 @router.get("/users")
