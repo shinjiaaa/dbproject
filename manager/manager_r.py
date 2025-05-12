@@ -3,6 +3,8 @@ from sqlalchemy.orm import Session
 from models import Service, User, Book
 from database import get_db
 from pydantic import BaseModel
+from sqlalchemy import func
+from datetime import date
 
 from mypage.mypage import get_current_user
 
@@ -50,10 +52,27 @@ def return_book(service_id: int, current_user: User = Depends(get_current_user),
     service = db.query(Service).filter(Service.service_id == service_id, Service.user_id == current_user.user_id).first()
     if not service:
         raise HTTPException(status_code=404, detail="Service not found")
+    
+    service.returned_at = date.today()
+
+    # 도서 상태 복구
     book = db.query(Book).filter(Book.book_id == service.book_id).first()
     book.rental_status = True
+
+    # 연체 횟수 확인
+    late_count = db.query(func.count()).select_from(Service).filter(
+        Service.user_id == current_user.user_id,
+        Service.returned_at > Service.due_date
+    ).scalar()
+
+    if late_count >= 2:
+        user = db.query(User).filter(User.user_id == current_user.user_id).first()
+        if user and not user.blacklist:
+            user.blacklist = True
+
     db.commit()
     return {"message": "반납 완료"}
+
 
 # 고객 정보 조회
 @router.get("/users")
@@ -68,11 +87,44 @@ async def get_blacklist(db: Session = Depends(get_db)):
     return blacklist
 
 # 블랙리스트 추가
-@router.post("/blacklist")
-async def add_blacklist(data: BlacklistData, db: Session = Depends(get_db)):
-    user = db.query(User).filter(User.user_id == data.user_id).first()
+# @router.post("/blacklist")
+# async def add_blacklist(data: BlacklistData, db: Session = Depends(get_db)):
+#    user = db.query(User).filter(User.user_id == data.user_id).first()
+#    if not user:
+#        raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
+#    user.blacklist = True
+#    db.commit()
+#    return {"message": "블랙리스트 추가 완료"}
+
+# 블랙리스트 해지
+@router.post("/blacklist/remove/{user_id}")
+async def remove_blacklist(user_id: int, db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.user_id == user_id).first()
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
-    user.blacklist = True
+    if not user.blacklist:
+        raise HTTPException(status_code=400, detail="이미 블랙리스트에 등록되어 있지 않습니다.")
+    user.blacklist = False
     db.commit()
-    return {"message": "블랙리스트 추가 완료"}
+    return {"message": "블랙리스트 해지 완료"}
+
+# 블랙리스트 등록
+@router.post("/blacklist/auto")
+def auto_blacklist(db: Session = Depends(get_db)):
+    late_users = db.query(Service.user_id)\
+        .filter(Service.return_date > Service.due_date)\
+        .group_by(Service.user_id)\
+        .having(func.count() >= 2)\
+        .all()
+
+     # 각 사용자에 대해 블랙리스트 처리
+    updated_users = []
+    for user in late_users:
+        user_id = user.user_id if hasattr(user, "user_id") else user[0]  # 튜플일 경우 대비
+        u = db.query(User).filter(User.user_id == user_id).first()
+        if u and not u.blacklist:
+            u.blacklist = True
+            updated_users.append(user_id)
+
+    db.commit()
+    return {"message": f"자동 블랙리스트 등록 완료: {len(updated_users)}명", "등록된 사용자": updated_users}
