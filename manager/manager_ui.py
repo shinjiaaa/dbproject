@@ -6,6 +6,8 @@ import tkinter as tk
 from manager import add_book_ui
 from manager import delete_book_ui
 from manager import return_book_ui
+from manager import blacklist_ui
+
 
 def show_manager_ui(root):
     for widget in root.winfo_children():
@@ -34,7 +36,7 @@ def show_manager_ui(root):
     frame_right.pack(side="right", fill="both", expand=True)
 
     tk.Label(frame_right, text="블랙리스트 관리", font=("Arial", 13)).pack(pady=(20, 10))
-    tk.Button(frame_right, text="블랙리스트 관리", width=13).pack(pady=2)
+    tk.Button(frame_right, text="블랙리스트 관리", width=13, command=lambda: blacklist_ui.show_blacklist_ui(root, lambda: show_manager_ui(root))).pack(pady=2)
 
 # 단독 실행
 if __name__ == "__main__":
