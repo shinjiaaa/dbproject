@@ -80,7 +80,7 @@ def rent_book():
     try:
         res = requests.post(f"http://localhost:8000/rental_book/{book_id}")
         if res.status_code == 200:
-            fetch_all_books()  # ✅ 먼저 새로고침
+            fetch_all_books()  # 먼저 새로고침
             messagebox.showinfo("대여 성공", res.json()["message"])
         else:
             messagebox.showerror("대여 실패", res.json()["detail"])
