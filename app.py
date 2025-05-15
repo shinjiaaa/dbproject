@@ -38,30 +38,6 @@ def init_books():
     db.commit()
     db.close()
 
-# 서버 시작할 때 딱 한 번: 관리자 계정 자동 생성
-@app.on_event("startup")
-def init_admin():
-    db = SessionLocal()
-    admin_id = "admin"
-    admin_pw = "admin123"
-
-    existing = db.query(User).filter(User.login_id == admin_id).first()
-
-    if not existing:
-        new_admin = User(
-            login_id=admin_id,
-            password=admin_pw,
-            name="관리자",
-            phone="010-0000-0000",
-            admin=True  # 핵심: 일반 유저와 구분하는 관리자 계정
-        )
-        db.add(new_admin)
-        db.commit()
-        print("관리자 계정이 생성되었습니다.")
-    else:
-        print("관리자 계정이 이미 존재합니다.")
-
-    db.close()
 
 # 라우터 연결
 app.include_router(register_router, tags=["회원가입"])
