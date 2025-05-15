@@ -17,7 +17,7 @@ root.title("도서 검색 및 대여")
 root.geometry("600x400")
 
 # 로그인 후 user_id 설정 (예시로 user_id 값을 설정해 줍니다)
-- user_id = 1  # 로그인 후 이 값을 동적으로 설정
+user_id = 1  # 로그인 후 이 값을 동적으로 설정
 
 # 도서 목록 업데이트
 def update_book_list(books):
