@@ -1,4 +1,4 @@
-#로그인이 필요
+#로그인에 필요
 import sys
 user_id = int(sys.argv[1]) if len(sys.argv) > 1 else None
 
