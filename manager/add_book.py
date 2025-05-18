@@ -7,7 +7,6 @@ from pydantic import BaseModel
 router = APIRouter()
 
 class BookCreate(BaseModel):
-    book_id: int
     book_title: str
     author: str
     year: int
@@ -17,7 +16,6 @@ class BookCreate(BaseModel):
 def add_book(data: BookCreate, db: Session = Depends(get_db)):
     try:
         new_book = Book(
-            book_id=data.book_id,
             book_title=data.book_title,
             author=data.author,
             year=data.year,

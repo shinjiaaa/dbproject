@@ -12,10 +12,6 @@ def show_add_book_ui(root):
 
     tk.Label(root, text="📚 도서 추가", font=("Arial", 16)).pack(pady=10)
 
-    tk.Label(root, text="도서 ID").pack()
-    id_entry = tk.Entry(root)
-    id_entry.pack()
-
     tk.Label(root, text="도서 제목").pack()
     title_entry = tk.Entry(root)
     title_entry.pack()
@@ -34,7 +30,6 @@ def show_add_book_ui(root):
 
     def register_book():
         data = {
-            "book_id": id_entry.get(),  # 수정된 속성명
             "book_title": title_entry.get(),  # ✅ 수정된 속성명
             "author": author_entry.get(),
             "year": year_entry.get(),
