@@ -41,9 +41,9 @@ def show_return_book_ui(root):
                         tree.insert(
                             "",
                             "end",
-                            iid=book["book_id"],
+                            iid=book["book_id"],  # 정수형으로 설정
                             values=(
-                                book["book_id"],  # 첫 번째 칼럼으로 book_id 보여줌
+                                book["book_id"],
                                 book["book_title"],
                                 book["author"],
                                 book.get("year", ""),
@@ -51,6 +51,8 @@ def show_return_book_ui(root):
                                 "대출 중"
                             )
                         )
+
+
         except Exception as e:
             messagebox.showerror("서버 오류", str(e))
 
@@ -66,16 +68,30 @@ def show_return_book_ui(root):
             messagebox.showwarning("선택 없음", "반납할 책을 선택하세요.")
             return
 
-        book_id = int(selected[0])  # Treeview의 iid로 book_id 저장했으므로 그대로 사용
+        book_id = int(selected[0])
+        url = f"http://localhost:8000/admin/return_book/{book_id}"
+        print(f"요청 URL: {url}")
         try:
-            res = requests.post(f"http://localhost:8000/return_book/{book_id}")
+            res = requests.post(url)
+            print(f"응답 상태: {res.status_code}, 내용: {res.text}")
+
             if res.status_code == 200:
                 messagebox.showinfo("성공", res.json()["message"])
                 fetch_books()
             else:
-                messagebox.showerror("실패", res.json().get("detail", "반납 실패"))
+                # 에러 메시지를 문자열로 안전하게 변환
+                detail_msg = res.json().get("detail", "반납 실패")
+                if not isinstance(detail_msg, str):
+                    detail_msg = str(detail_msg)
+                messagebox.showerror("실패", detail_msg)
         except Exception as e:
             messagebox.showerror("서버 오류", str(e))
+
+
+
+
+
+
 
     tk.Button(window, text="반납", width=10, command=return_selected).pack()
 
