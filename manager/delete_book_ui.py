@@ -42,15 +42,19 @@ def show_delete_book_ui(root):
     # 책 목록 불러오기
     books = fetch_books()
     for book in books:
-        status = "대출 중" if book["rental_status"] else "대출 가능"
+    # 숫자 -> 문자열 변환
+        rental_value = book["rental_status"]
+        status = "대출 중" if rental_value == 1 else "대출 가능"
+
         tree.insert("", "end", values=(
             book["book_id"],
             book["title"],
             book["author"],
             book["year"],
             book["location"],
-            book["rental_status"] 
+            status
         ))
+
     def delete_selected():
         selected_item = tree.selection()
         if not selected_item:
