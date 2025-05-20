@@ -31,7 +31,10 @@ def login_page(root):
                 messagebox.showinfo("성공", res_json["message"])
 
                 if res_json.get("is_admin"):  # 관리자일 경우
+
+                if res_json.get("is_admin"):  # 관리자일 경우
                     from manager import manager_ui
+
                     manager_ui.show_manager_ui(root)
                 else:
                     user_id = res_json["user_id"]  # ✅ 여기서 user_id 추출
@@ -43,6 +46,7 @@ def login_page(root):
 
     tk.Button(root, text="로그인", command=login_action).pack(pady=5)
     tk.Button(root, text="회원가입", command=lambda: register_page(root)).pack(pady=2)
+
 
 # ===== 회원가입 화면 =====
 def register_page(root):
@@ -76,7 +80,7 @@ def register_page(root):
             "name": name,
             "phone": phone,
             "login_id": login_id,
-            "password": password
+            "password": password,
         }
 
         try:
@@ -85,11 +89,14 @@ def register_page(root):
                 messagebox.showinfo("회원가입", "회원가입이 완료되었습니다.")
                 login_page(root)
             else:
-                messagebox.showerror("회원가입 실패", response.json().get("detail", "에러 발생"))
+                messagebox.showerror(
+                    "회원가입 실패", response.json().get("detail", "에러 발생")
+                )
         except Exception as e:
             messagebox.showerror("서버 오류", f"연결 실패: {e}")
 
     tk.Button(root, text="완료", command=complete_register).pack(pady=5)
+
 
 # ===== 메인 메뉴 =====
 def main_menu_page(root, user_id):
