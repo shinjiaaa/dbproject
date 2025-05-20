@@ -29,6 +29,7 @@ class Book(Base):
     year = Column(Integer)
     rental_status = Column(Boolean)
     library_location = Column(String)
+    is_deleted = Column(Boolean, default=False)
 
     # 관계 (Book -> Service -> User)
     services = relationship("Service", back_populates="book")

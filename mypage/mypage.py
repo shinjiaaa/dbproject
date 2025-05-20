@@ -3,8 +3,6 @@ from sqlalchemy.orm import Session
 from models import Book, Service, User
 from database import get_db
 from datetime import timedelta, datetime
-from pydantic import BaseModel
-from typing import List, Optional
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 

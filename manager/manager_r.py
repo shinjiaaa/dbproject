@@ -47,31 +47,29 @@ async def delete_book(book_id: int, db: Session = Depends(get_db)):
     return {"message": "도서 삭제 완료"}
 
 # 도서 반납
-@router.post("/return_book/{service_id}")
-def return_book(service_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    service = db.query(Service).filter(Service.service_id == service_id, Service.user_id == current_user.user_id).first()
-    if not service:
-        raise HTTPException(status_code=404, detail="Service not found")
-    
-    service.returned_at = date.today()
+@router.post("/return_book/{book_id}")
+def return_book(book_id: int, db: Session = Depends(get_db)):
+    # 도서 존재 여부 + 삭제 여부 확인
+    book = db.query(Book).filter(
+        Book.book_id == book_id,
+        Book.is_deleted == False
+    ).first()
 
-    # 도서 상태 복구
-    book = db.query(Book).filter(Book.book_id == service.book_id).first()
+    if not book:
+        raise HTTPException(status_code=404, detail="도서를 찾을 수 없습니다.")
+
+    # 이미 반납된 상태인지 확인
+    if book.rental_status:
+        raise HTTPException(status_code=400, detail="이미 반납된 도서입니다.")
+
+    # 반납 처리
     book.rental_status = True
-
-    # 연체 횟수 확인
-    late_count = db.query(func.count()).select_from(Service).filter(
-        Service.user_id == current_user.user_id,
-        Service.returned_at > Service.due_date
-    ).scalar()
-
-    if late_count >= 2:
-        user = db.query(User).filter(User.user_id == current_user.user_id).first()
-        if user and not user.blacklist:
-            user.blacklist = True
-
     db.commit()
-    return {"message": "반납 완료"}
+
+    return {"message": "도서가 성공적으로 반납되었습니다."}
+
+
+
 
 
 # 고객 정보 조회
