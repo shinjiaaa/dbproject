@@ -1,6 +1,9 @@
 from sqlalchemy import Column, String, Integer, Boolean, Date, ForeignKey
 from sqlalchemy.orm import relationship
 from database import Base
+from sqlalchemy import DateTime
+from datetime import datetime
+from datetime import timezone
 
 class User(Base):
     __tablename__ = "users"
@@ -42,6 +45,7 @@ class Service(Base):
     book_id = Column(Integer, ForeignKey('books.book_id')) 
     user_id = Column(Integer, ForeignKey('users.user_id')) 
 
+    rented_at = Column(DateTime, default=datetime.now(timezone.utc))
     due_date = Column(Date)
     returned_at = Column(Date, nullable=True)
     extension_count = Column(Integer, default=0)
