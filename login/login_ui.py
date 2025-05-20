@@ -2,6 +2,7 @@ import tkinter as tk
 from tkinter import messagebox
 import requests
 
+
 # ===== 로그인 화면 =====
 def login_page(root):
     clear_widgets(root)
@@ -26,9 +27,10 @@ def login_page(root):
             if response.status_code == 200:
                 res_json = response.json()
                 messagebox.showinfo("성공", res_json["message"])
-            
-                if res_json.get("is_admin"):  #관리자일 경우
+
+                if res_json.get("is_admin"):  # 관리자일 경우
                     from manager import manager_ui
+
                     manager_ui.show_manager_ui(root)
                 else:
                     main_menu_page(root)
@@ -39,6 +41,7 @@ def login_page(root):
 
     tk.Button(root, text="로그인", command=login_action).pack(pady=5)
     tk.Button(root, text="회원가입", command=lambda: register_page(root)).pack(pady=2)
+
 
 # ===== 회원가입 화면 =====
 def register_page(root):
@@ -72,7 +75,7 @@ def register_page(root):
             "name": name,
             "phone": phone,
             "login_id": login_id,
-            "password": password
+            "password": password,
         }
 
         try:
@@ -81,11 +84,14 @@ def register_page(root):
                 messagebox.showinfo("회원가입", "회원가입이 완료되었습니다.")
                 login_page(root)
             else:
-                messagebox.showerror("회원가입 실패", response.json().get("detail", "에러 발생"))
+                messagebox.showerror(
+                    "회원가입 실패", response.json().get("detail", "에러 발생")
+                )
         except Exception as e:
             messagebox.showerror("서버 오류", f"연결 실패: {e}")
 
     tk.Button(root, text="완료", command=complete_register).pack(pady=5)
+
 
 # ===== 메인 메뉴 =====
 def main_menu_page(root):
@@ -94,7 +100,10 @@ def main_menu_page(root):
     tk.Button(root, text="도서 검색", width=20).pack(pady=3)
     tk.Button(root, text="마이페이지", width=20).pack(pady=3)
     tk.Button(root, text="관리자 모드", width=20).pack(pady=3)
-    tk.Button(root, text="로그아웃", width=20, command=lambda: login_page(root)).pack(pady=3)
+    tk.Button(root, text="로그아웃", width=20, command=lambda: login_page(root)).pack(
+        pady=3
+    )
+
 
 # ===== 위젯 클리어 =====
 def clear_widgets(root):
