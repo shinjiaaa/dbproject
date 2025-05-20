@@ -29,12 +29,19 @@ def login_page():
         try:
             response = requests.post("http://localhost:8000/login", json=data)
             if response.status_code == 200:
-                messagebox.showinfo("성공", response.json()["message"])
-                main_menu_page()
+                res_json = response.json()
+                messagebox.showinfo("성공", res_json["message"])
+            
+                if res_json.get("is_admin"):  #관리자일 경우
+                    import manager.manager_ui as manager_ui
+                    manager_ui.show_manager_ui(root)
+                else:
+                    main_menu_page()
             else:
                 messagebox.showerror("오류", response.json()["detail"])
         except Exception as e:
             messagebox.showerror("서버 오류", f"연결 실패: {e}")
+
 
     tk.Button(root, text="로그인", command=login_action).pack(pady=5)
     tk.Button(root, text="회원가입", command=register_page).pack(pady=2)
