@@ -13,8 +13,9 @@ class BookData(BaseModel):
     book_title: str
     author: str
     year: int
-    rental_status: bool
+    rental_status: bool = True   
     library_location: str
+    is_deleted: bool = False
 
 class BlacklistData(BaseModel):
     user_id: int
@@ -23,17 +24,20 @@ class BlacklistData(BaseModel):
 # 도서 추가
 @router.post("/book")
 async def add_book(data: BookData, db: Session = Depends(get_db)):
-    new_book = Book(
-        book_title=data.book_title,
-        author=data.author,
-        year=data.year,
-        rental_status=data.rental_status,
-        library_location=data.library_location
-    )
-    db.add(new_book)
-    db.commit()
-    db.refresh(new_book)
-    return {"message": "도서 추가 완료"}
+    try:
+        new_book = Book(
+            book_title=data.book_title,
+            author=data.author,
+            year=data.year,
+            library_location=data.library_location,
+            rental_status=data.rental_status,
+            is_deleted=data.is_deleted
+        )
+        db.add(new_book)
+        db.commit()
+        return {"message": "도서 등록 완료"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
 
 # 도서 삭제
 @router.delete("/book/{book_id}")
@@ -66,6 +70,13 @@ def return_book(book_id: int, db: Session = Depends(get_db)):
     db.commit()
 
     return {"message": "도서가 성공적으로 반납되었습니다."}
+
+# 📌 도서 목록 전체 조회
+@router.get("/books")
+def get_books(db: Session = Depends(get_db)):
+    books = db.query(Book).filter(Book.is_deleted == False).all()
+    return books
+
 
 
 

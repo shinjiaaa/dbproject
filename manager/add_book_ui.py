@@ -30,14 +30,16 @@ def show_add_book_ui(root):
 
     def register_book():
         data = {
-            "book_title": title_entry.get(),  # ✅ 수정된 속성명
+            "book_title": title_entry.get(),  
             "author": author_entry.get(),
-            "year": year_entry.get(),
-            "library_location": location_entry.get()
+            "year": int(year_entry.get()),
+            "library_location": location_entry.get(),
+            "rental_status": True,         
+            "is_deleted": False 
         }
 
         try:
-            response = requests.post("http://localhost:8000/manager/add_book", json=data)
+            response = requests.post("http://localhost:8000/admin/book", json=data)
             if response.status_code == 200:
                 messagebox.showinfo("성공", "도서가 등록되었습니다.")
                 manager_ui.show_manager_ui(root)
