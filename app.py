@@ -1,5 +1,5 @@
 from fastapi import FastAPI
-from models import Base, User 
+from models import Base, User
 from database import engine, SessionLocal
 from register.register import router as register_router
 from login.login import router as login_router
@@ -14,6 +14,7 @@ app = FastAPI()
 # 테이블이 없으면 생성
 Base.metadata.create_all(bind=engine)
 
+
 # 초기 책 데이터만 추가
 @app.on_event("startup")
 def init_books():
@@ -22,16 +23,35 @@ def init_books():
 
     db = SessionLocal()
 
-       # 모든 도서를 '대여 가능' 상태로 초기화
-    db.query(Book).update({Book.rental_status: True})
-
     initial_books = [
-        {"book_title": "파이썬 프로그래밍", "author": "홍길동", "year": 2020, "library_location": "A1", "rental_status": True},
-        {"book_title": "데이터베이스 기초", "author": "김철수", "year": 2018, "library_location": "B2", "rental_status": True},
-        {"book_title": "알고리즘 개론", "author": "이영희", "year": 2021, "library_location": "C3", "rental_status": False}
+        {
+            "book_title": "파이썬 프로그래밍",
+            "author": "홍길동",
+            "year": 2020,
+            "library_location": "A1",
+            "rental_status": True,
+        },
+        {
+            "book_title": "데이터베이스 기초",
+            "author": "김철수",
+            "year": 2018,
+            "library_location": "B2",
+            "rental_status": True,
+        },
+        {
+            "book_title": "알고리즘 개론",
+            "author": "이영희",
+            "year": 2021,
+            "library_location": "C3",
+            "rental_status": True,
+        },
     ]
     for book in initial_books:
-        exists = db.query(Book).filter_by(book_title=book["book_title"], author=book["author"]).first()
+        exists = (
+            db.query(Book)
+            .filter_by(book_title=book["book_title"], author=book["author"])
+            .first()
+        )
         if not exists:
             db.add(Book(**book))
             print(f" 초기 도서 '{book['book_title']}' 추가됨")
