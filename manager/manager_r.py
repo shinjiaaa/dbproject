@@ -46,27 +46,41 @@ async def delete_book(book_id: int, db: Session = Depends(get_db)):
     return {"message": "도서 삭제 완료"}
 
 # 도서 반납
+# 도서 반납
 @router.post("/return_book/{book_id}")
 def return_book(book_id: int, db: Session = Depends(get_db)):
-    # 도서 존재 여부 + 삭제 여부 확인
+    from sqlalchemy import or_
+    from datetime import datetime
+
+    # 1. 도서 확인 (삭제되지 않은 것만)
     book = db.query(Book).filter(
         Book.book_id == book_id,
-        Book.is_deleted == False
+        or_(Book.is_deleted == False, Book.is_deleted == None)
     ).first()
 
     if not book:
         raise HTTPException(status_code=404, detail="도서를 찾을 수 없습니다.")
 
-    # 이미 반납된 상태인지 확인
+    # 2. 이미 반납된 도서인지 확인
     if book.rental_status:
         raise HTTPException(status_code=400, detail="이미 반납된 도서입니다.")
 
-    # 반납 처리
+    # 3. 가장 최근 대출 기록 가져오기
+    service = db.query(Service).filter(
+        Service.book_id == book_id,
+        Service.returned_at == None
+    ).order_by(Service.rented_at.desc()).first()
+
+    if not service:
+        raise HTTPException(status_code=404, detail="대출 기록을 찾을 수 없습니다.")
+
+    # 4. 반납 처리
     book.rental_status = True
+    service.returned_at = datetime.utcnow()  # ❗ 반납일 기록
+
     db.commit()
 
     return {"message": "도서가 성공적으로 반납되었습니다."}
-
 
 
 

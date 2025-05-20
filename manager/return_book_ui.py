@@ -19,7 +19,7 @@ def show_return_book_ui(root):
     search_entry.pack(side="left", padx=5)
 
     # book_id 컬럼도 포함된 Treeview 컬럼 정의
-    columns = ("ID", "책 제목", "저자", "출판년도", "도서관 위치", "대출 상태")
+    columns = ("책 ID", "책 제목", "저자", "출판년도", "도서관 위치", "대출 상태")
     tree = ttk.Treeview(window, columns=columns, show="headings", height=12)
     for col in columns:
         tree.heading(col, text=col)
