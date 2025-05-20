@@ -9,7 +9,7 @@ def mypage_ui(root, user_id):
 
     clear_widgets(root)
     root.title("마이페이지")
-    root.geometry("700x500")
+    root.geometry("1000x500")
 
     BASE_URL = "http://127.0.0.1:8000/mypage"
 

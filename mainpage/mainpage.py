@@ -5,7 +5,7 @@ from models import Book, Service
 from database import get_db
 from pydantic import BaseModel
 from typing import List, Optional
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 
 router = APIRouter()
 
@@ -102,7 +102,7 @@ def rental_book(book_id: int, req: RentalRequest, db: Session = Depends(get_db))
 
     book.rental_status = False  # 대출 중으로 상태 변경
 
-    now = datetime.utcnow()  # SQLite 호환 (naive datetime)
+    now = datetime.now(timezone.utc)  # SQLite 호환 (naive datetime)
     new_service = Service(
         user_id=req.user_id,
         book_id=book_id,

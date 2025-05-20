@@ -31,8 +31,6 @@ def login_page(root):
                 messagebox.showinfo("성공", res_json["message"])
 
                 if res_json.get("is_admin"):  # 관리자일 경우
-
-                if res_json.get("is_admin"):  # 관리자일 경우
                     from manager import manager_ui
 
                     manager_ui.show_manager_ui(root)
