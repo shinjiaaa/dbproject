@@ -6,7 +6,6 @@ from pydantic import BaseModel
 from sqlalchemy import func
 from datetime import date
 
-from mypage.mypage import get_current_user
 
 router = APIRouter()
 

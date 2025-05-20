@@ -4,7 +4,7 @@ from database import engine, SessionLocal
 from register.register import router as register_router
 from login.login import router as login_router
 from mainpage.mainpage import router as mainpage_router
-from mypage.mypage import router as mypage_router
+from mypage.mypage_r import router as mypage_router
 from manager.manager_r import router as manager_router
 
 import uvicorn
@@ -43,7 +43,7 @@ def init_books():
 app.include_router(register_router, tags=["회원가입"])
 app.include_router(login_router, tags=["로그인"])
 app.include_router(mainpage_router, tags=["메인"])
-app.include_router(mypage_router, tags=["마이페이지"])
+app.include_router(mypage_router, prefix="/mypage", tags=["마이페이지"])
 app.include_router(manager_router, prefix="/admin", tags=["관리자"])
 
 # 서버 실행 (uvicorn으로 실행할 때만 작동)

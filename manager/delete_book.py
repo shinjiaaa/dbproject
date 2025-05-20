@@ -27,10 +27,10 @@ def delete_book(data: DeleteBookRequest):
         conn.close()
         raise HTTPException(status_code=404, detail="해당 책을 찾을 수 없거나 이미 삭제되었습니다.")
 
-    rental_status = result[0]  # 1: 반납됨, 0: 대출 중
+    rental_status = result[0]  # True:대출 중 False:대출 가능
 
     # 대출 중이면 삭제 불가
-    if rental_status == 0:
+    if rental_status == False:
         conn.close()
         raise HTTPException(status_code=400, detail="대출 중인 도서는 삭제할 수 없습니다.")
 
