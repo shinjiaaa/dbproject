@@ -30,7 +30,8 @@ def show_delete_book_ui(root):
 
     tk.Label(window, text="📚 도서 목록 ").pack(pady=10)
 
-    columns = ("도서 ID", "제목", "저자", "출판년도", "도서관")
+    columns = ("도서 ID", "제목", "저자", "출판연도", "위치", "대출상태")  # ← 여기 추가
+
     tree = ttk.Treeview(window, columns=columns, show="headings", height=10)
     for col in columns:
         tree.heading(col, text=col)
@@ -41,8 +42,15 @@ def show_delete_book_ui(root):
     # 책 목록 불러오기
     books = fetch_books()
     for book in books:
-        tree.insert("", "end", values=(book["book_id"], book["book_title"], book["author"], book["year"], book["library_location"]))
-
+        status = "대출 중" if book["rental_status"] else "대출 가능"
+        tree.insert("", "end", values=(
+            book["book_id"],
+            book["title"],
+            book["author"],
+            book["year"],
+            book["location"],
+            book["rental_status"] 
+        ))
     def delete_selected():
         selected_item = tree.selection()
         if not selected_item:
