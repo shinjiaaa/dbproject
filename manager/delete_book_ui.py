@@ -4,6 +4,8 @@ import requests
 
 def fetch_books(query=None):
     """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
+def fetch_books(query=None):
+    """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
     try:
         url = "http://localhost:8000/books_list"
         params = {}

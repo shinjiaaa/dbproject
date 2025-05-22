@@ -1,7 +1,24 @@
 from fastapi import APIRouter
 import sqlite3
+from fastapi import APIRouter
+from database import SessionLocal
+from models import Book
 
 router = APIRouter()
+
+@router.post("/admin/set_available/{book_id}")
+def set_book_available(book_id: int):
+    db = SessionLocal()
+    book = db.query(Book).filter(Book.book_id == book_id).first()
+    if not book:
+        db.close()
+        return {"error": "Book not found"}
+
+    book.rental_status = 0  # 대출 가능 상태로 변경
+    db.commit()
+    db.close()
+    return {"message": f"Book ID {book_id} is now available."}
+
 
 @router.get("/get_books")
 def get_books():
