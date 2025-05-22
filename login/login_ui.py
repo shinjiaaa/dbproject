@@ -5,6 +5,7 @@ import requests
 from mainpage.mainpage_ui import mainpage_ui
 from mypage.mypage_ui import mypage_ui
 
+
 # ===== 로그인 화면 =====
 def login_page(root):
     clear_widgets(root)
@@ -100,9 +101,15 @@ def register_page(root):
 def main_menu_page(root, user_id):
     clear_widgets(root)
     tk.Label(root, text="메인 메뉴", font=("Arial", 16)).pack(pady=10)
-    tk.Button(root, text="도서 검색", width=20, command=lambda: mainpage_ui(root, user_id)).pack(pady=3)
-    tk.Button(root, text="마이페이지", width=20, command=lambda: mypage_ui(root, user_id)).pack(pady=3)
-    tk.Button(root, text="로그아웃", width=20, command=lambda: login_page(root)).pack(pady=3)
+    tk.Button(
+        root, text="도서 검색", width=20, command=lambda: mainpage_ui(root, user_id)
+    ).pack(pady=3)
+    tk.Button(
+        root, text="마이페이지", width=20, command=lambda: mypage_ui(root, user_id)
+    ).pack(pady=3)
+    tk.Button(root, text="로그아웃", width=20, command=lambda: login_page(root)).pack(
+        pady=3
+    )
 
 
 # ===== 위젯 클리어 =====
