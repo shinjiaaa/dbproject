@@ -1,11 +1,13 @@
 from fastapi import FastAPI
-from models import Base, User 
-from database import engine, SessionLocal
+from models import Base
+from database import engine
 from register.register import router as register_router
 from login.login import router as login_router
 from mainpage.mainpage import router as mainpage_router
 from mypage.mypage_r import router as mypage_router
 from manager.manager_r import router as manager_router
+from database_api import router as books_router
+from manager.delete_book import router as delete_router
 
 import uvicorn
 
@@ -38,6 +40,7 @@ def init_books():
 
 
 # 라우터 연결
+app.include_router(delete_router)
 app.include_router(register_router, tags=["회원가입"])
 app.include_router(login_router, tags=["로그인"])
 app.include_router(mainpage_router, tags=["메인"])

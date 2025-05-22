@@ -34,11 +34,13 @@ def mypage_ui(root, user_id):
                     # 대출 상태 결정
                     if loan.get("returned_at") is not None:
                         status = "반납"
+                        returned_display = loan["returned_at"].split("T")[0]
                     else:
                         status = "대출 중"
+                        returned_display = "-"
 
                     # service_id는 사용자에게 안 보이게 tags로만 저장
-                    treeview.insert("", "end", values=(book_title, due_date, location, status), tags=(str(service_id),))
+                    treeview.insert("", "end", values=(book_title, due_date, location, status, returned_display), tags=(str(service_id),))
             else:
                 messagebox.showwarning("경고", response.json().get("detail", "에러 발생"))
         except Exception as e:
@@ -54,7 +56,7 @@ def mypage_ui(root, user_id):
         service_id = treeview.item(selected[0])["tags"][0]
 
         try:
-            # ✅ 쿼리 파라미터로 user_id, extension_days 전달
+            #  쿼리 파라미터로 user_id, extension_days 전달
             response = requests.post(
                 f"{BASE_URL}/extend_rental/{service_id}",
                 params={
@@ -73,7 +75,7 @@ def mypage_ui(root, user_id):
     # ========== UI 구성 ==========
     tk.Label(root, text="📘 마이페이지", font=("Arial", 16)).pack(pady=10)
 
-    columns = ("책 제목", "반납일", "위치", "상태")
+    columns = ("책 제목", "반납예정일", "위치", "상태", "반납일")
     treeview = ttk.Treeview(root, columns=columns, show="headings", height=10)
     for col in columns:
         treeview.heading(col, text=col)
