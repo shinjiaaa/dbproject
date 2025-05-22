@@ -4,8 +4,6 @@ import requests
 
 def fetch_books(query=None):
     """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
-def fetch_books(query=None):
-    """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
     try:
         url = "http://localhost:8000/books_list"
         params = {}
@@ -59,14 +57,14 @@ def show_delete_book_ui(root):
     tree.pack(pady=10)
 
     def load_books(query=None):
-        # 기존 목록 클리어
+    # 기존 목록 클리어
         for row in tree.get_children():
             tree.delete(row)
-        # 책 목록 불러오기
+            # 책 목록 불러오기
         books = fetch_books(query)
         for book in books:
             rental_value = book.get("rental_status", False)
-            status = "대출 중" if rental_value else "대출 가능"
+            status = "대출 가능" if rental_value else "대출 중" 
             tree.insert("", "end", values=(
                 book.get("book_id", ""),
                 book.get("book_title", ""),
@@ -75,6 +73,7 @@ def show_delete_book_ui(root):
                 book.get("library_location", ""),
                 status
             ))
+
 
     def on_search():
         query = search_var.get().strip()
