@@ -41,6 +41,7 @@ def init_books():
 
 # 라우터 연결
 app.include_router(delete_router)
+app.include_router(books_router)
 app.include_router(register_router, tags=["회원가입"])
 app.include_router(login_router, tags=["로그인"])
 app.include_router(mainpage_router, tags=["메인"])
