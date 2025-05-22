@@ -2,8 +2,11 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import requests
 
+
 def fetch_books(query=None):
     """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
+
+
 def fetch_books(query=None):
     """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
     try:
@@ -21,6 +24,7 @@ def fetch_books(query=None):
         messagebox.showerror("서버 연결 오류", str(e))
         return []
 
+
 def delete_book(book_id):
     """서버에 삭제 요청"""
     try:
@@ -34,6 +38,7 @@ def delete_book(book_id):
     except Exception as e:
         messagebox.showerror("오류", str(e))
         return False
+
 
 def show_delete_book_ui(root):
     window = tk.Toplevel(root)
@@ -65,16 +70,20 @@ def show_delete_book_ui(root):
         # 책 목록 불러오기
         books = fetch_books(query)
         for book in books:
-            rental_value = book.get("rental_status", False)
+            rental_value = book.get("rental_status")
             status = "대출 중" if rental_value else "대출 가능"
-            tree.insert("", "end", values=(
-                book.get("book_id", ""),
-                book.get("book_title", ""),
-                book.get("author", ""),
-                book.get("year", ""),
-                book.get("library_location", ""),
-                status
-            ))
+            tree.insert(
+                "",
+                "end",
+                values=(
+                    book.get("book_id", ""),
+                    book.get("book_title", ""),
+                    book.get("author", ""),
+                    book.get("year", ""),
+                    book.get("library_location", ""),
+                    status,
+                ),
+            )
 
     def on_search():
         query = search_var.get().strip()
