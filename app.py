@@ -9,11 +9,19 @@ from manager.manager_r import router as manager_router
 from database_api import router as books_router
 from manager.delete_book import router as delete_router
 
-import uvicorn
 
-app = FastAPI()
+app = FastAPI() 
 
-# 테이블이 없으면 생성
+# 모든 라우터 등록
+app.include_router(delete_router)
+app.include_router(books_router)
+app.include_router(register_router, tags=["회원가입"])
+app.include_router(login_router, tags=["로그인"])
+app.include_router(mainpage_router, tags=["메인"])
+app.include_router(mypage_router, tags=["마이페이지"])
+app.include_router(manager_router, prefix="/admin", tags=["관리자"])
+
+# DB 테이블 생성
 Base.metadata.create_all(bind=engine)
 
 # 초기 책 데이터만 추가
@@ -32,21 +40,9 @@ def init_books():
     ]
     for book in initial_books:
         exists = db.query(Book).filter_by(book_title=book["book_title"], author=book["author"]).first()
+        exists = db.query(Book).filter_by(book_title=book["book_title"], author=book["author"]).first()
         if not exists:
             db.add(Book(**book))
             print(f" 초기 도서 '{book['book_title']}' 추가됨")
     db.commit()
     db.close()
-
-
-# 라우터 연결
-app.include_router(delete_router)
-app.include_router(register_router, tags=["회원가입"])
-app.include_router(login_router, tags=["로그인"])
-app.include_router(mainpage_router, tags=["메인"])
-app.include_router(mypage_router, prefix="/mypage", tags=["마이페이지"])
-app.include_router(manager_router, prefix="/admin", tags=["관리자"])
-
-# 서버 실행 (uvicorn으로 실행할 때만 작동)
-if __name__ == "__main__":
-    uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
