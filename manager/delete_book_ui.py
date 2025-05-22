@@ -3,9 +3,7 @@ from tkinter import ttk, messagebox
 import requests
 
 def fetch_books(query=None):
-    """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
-def fetch_books(query=None):
-    """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
+   # """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
     try:
         url = "http://localhost:8000/books_list"
         params = {}
@@ -22,7 +20,7 @@ def fetch_books(query=None):
         return []
 
 def delete_book(book_id):
-    """서버에 삭제 요청"""
+  #  """서버에 삭제 요청"""
     try:
         response = requests.delete(f"http://localhost:8000/admin/book/{book_id}")
         if response.status_code == 200:
@@ -65,7 +63,7 @@ def show_delete_book_ui(root):
         # 책 목록 불러오기
         books = fetch_books(query)
         for book in books:
-            rental_value = book.get("rental_status", False)
+            rental_value = book.get("rental_status")
             status = "대출 중" if rental_value else "대출 가능"
             tree.insert("", "end", values=(
                 book.get("book_id", ""),

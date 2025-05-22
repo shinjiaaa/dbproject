@@ -40,7 +40,7 @@ def init_books():
     db.close()
 
 # 라우터 연결
-app.include_router(delete_router)
+app.include_router(delete_router,prefix="/admin")
 app.include_router(books_router)
 app.include_router(register_router, tags=["회원가입"])
 app.include_router(login_router, tags=["로그인"])

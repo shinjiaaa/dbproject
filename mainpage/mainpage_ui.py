@@ -20,7 +20,7 @@ def mainpage_ui(root, user_id):
             year = book.get("year", "")
             location = book.get("library_location", "")
 
-            # ✅ rental_status: True면 대여 가능, False면 대여 중
+            # rental_status: True면 대여 가능, False면 대여 중
             rental_status = "대여 가능" if book.get("rental_status", True) else "대여 중"
 
             # book_id는 사용자에겐 안 보이지만 tags로 저장
