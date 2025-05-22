@@ -57,10 +57,10 @@ def show_delete_book_ui(root):
     tree.pack(pady=10)
 
     def load_books(query=None):
-        # 기존 목록 클리어
+    # 기존 목록 클리어
         for row in tree.get_children():
             tree.delete(row)
-        # 책 목록 불러오기
+            # 책 목록 불러오기
         books = fetch_books(query)
         for book in books:
             rental_value = book.get("rental_status")
@@ -73,6 +73,7 @@ def show_delete_book_ui(root):
                 book.get("library_location", ""),
                 status
             ))
+
 
     def on_search():
         query = search_var.get().strip()
