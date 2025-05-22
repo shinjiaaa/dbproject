@@ -29,3 +29,39 @@ def delete_book(data: DeleteBookRequest):
     conn.commit()
     conn.close()
     return {"message": "도서가 성공적으로 삭제되었습니다."}
+
+@router.get("/books_list")
+def get_books(query: str = None):
+    conn = sqlite3.connect("mydatabase.db")
+    cursor = conn.cursor()
+
+    if query:
+        # 제목 또는 저자에 검색어 포함되는 도서만 조회 (is_deleted=0 포함)
+        cursor.execute("""
+            SELECT book_id, book_title, author, year, library_location, rental_status
+            FROM books
+            WHERE is_deleted = 0 AND (book_title LIKE ? OR author LIKE ?)
+        """, (f"%{query}%", f"%{query}%"))
+    else:
+        cursor.execute("""
+            SELECT book_id, book_title, author, year, library_location, rental_status
+            FROM books
+            WHERE is_deleted = 0
+        """)
+
+    rows = cursor.fetchall()
+    conn.close()
+
+    books = []
+    for row in rows:
+        books.append({
+            "book_id": row[0],
+            "book_title": row[1],
+            "author": row[2],
+            "year": row[3],
+            "library_location": row[4],
+            "rental_status": row[5]
+        })
+
+    return books
+
