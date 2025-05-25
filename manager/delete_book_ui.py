@@ -75,7 +75,7 @@ def show_delete_book_ui(root):
         books = fetch_books(query)
         for book in books:
             rental_value = book.get("rental_status")
-            status = "대출 중" if rental_value else "대출 가능"
+            status = "대출 가능" if rental_value else "대출 중중"
             # 책 정보를 트리뷰에 삽입
             tree.insert(
                 "",

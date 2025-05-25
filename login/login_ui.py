@@ -8,25 +8,23 @@ from mypage.mypage_ui import mypage_ui
 
 # ===== 로그인 화면 =====
 def login_page(root):
-    clear_widgets(root)  # 위젯 초기화
+    clear_widgets(root)
 
-    tk.Label(root, text="로그인", font=("Arial", 16)).pack(pady=10)  # UI 제목
+    tk.Label(root, text="로그인", font=("Arial", 16)).pack(pady=10)
 
-    tk.Label(root, text="아이디").pack()  # UI 아이디 입력
+    tk.Label(root, text="아이디").pack()
     login_id_entry = tk.Entry(root)
     login_id_entry.pack()
 
-    tk.Label(root, text="비밀번호").pack()  # UI 비밀번호 입력
+    tk.Label(root, text="비밀번호").pack()
     password_entry = tk.Entry(root, show="*")
     password_entry.pack()
 
-    # 로그인 동작 함수
     def login_action():
-        login_id = login_id_entry.get()  # 아이디 입력
-        password = password_entry.get()  # 비밀번호 입력
+        login_id = login_id_entry.get()
+        password = password_entry.get()
 
-        data = {"login_id": login_id, "password": password}  # 로그인 정보 딕셔너리
-        # 서버에 로그인 요청
+        data = {"login_id": login_id, "password": password}
         try:
             response = requests.post("http://localhost:8000/login", json=data)
             if response.status_code == 200:
@@ -36,14 +34,14 @@ def login_page(root):
                 if res_json.get("is_admin"):  # 관리자일 경우
                     from manager import manager_ui
 
-                    manager_ui.show_manager_ui(root)  # 관리자 UI로 이동
+                    manager_ui.show_manager_ui(root)
                 else:
-                    user_id = res_json["user_id"]  # 여기서 user_id 추출
-                    main_menu_page(root, user_id)  # 메인 메뉴로 이동
+                    user_id = res_json["user_id"]  #  여기서 user_id 추출
+                    main_menu_page(root, user_id)
             else:
-                messagebox.showerror("오류", response.json()["detail"])  # 로그인 실패
+                messagebox.showerror("오류", response.json()["detail"])
         except Exception as e:
-            messagebox.showerror("서버 오류", f"연결 실패: {e}")  # 서버 연결 실패
+            messagebox.showerror("서버 오류", f"연결 실패: {e}")
 
     tk.Button(root, text="로그인", command=login_action).pack(pady=5)
     tk.Button(root, text="회원가입", command=lambda: register_page(root)).pack(pady=2)
@@ -53,32 +51,30 @@ def login_page(root):
 def register_page(root):
     clear_widgets(root)
 
-    tk.Label(root, text="회원가입", font=("Arial", 16)).pack(pady=10)  # UI 제목
+    tk.Label(root, text="회원가입", font=("Arial", 16)).pack(pady=10)
 
-    tk.Label(root, text="이름").pack()  # UI 이름 입력
+    tk.Label(root, text="이름").pack()
     name_entry = tk.Entry(root)
     name_entry.pack()
 
-    tk.Label(root, text="전화번호").pack()  # UI 전화번호 입력
+    tk.Label(root, text="전화번호").pack()
     phone_entry = tk.Entry(root)
     phone_entry.pack()
 
-    tk.Label(root, text="아이디").pack()  # UI 아이디 입력
+    tk.Label(root, text="아이디").pack()
     login_id_entry = tk.Entry(root)
     login_id_entry.pack()
 
-    tk.Label(root, text="비밀번호").pack()  # UI 비밀번호 입력
+    tk.Label(root, text="비밀번호").pack()
     pw_entry = tk.Entry(root, show="*")
     pw_entry.pack()
 
-    # 회원가입 완료 동작 함수
     def complete_register():
-        name = name_entry.get()  # 이름 입력
-        phone = phone_entry.get()  # 전화번호 입력
-        login_id = login_id_entry.get()  # 아이디 입력
-        password = pw_entry.get()  # 비밀번호 입력
+        name = name_entry.get()
+        phone = phone_entry.get()
+        login_id = login_id_entry.get()
+        password = pw_entry.get()
 
-        # 입력 값 검증
         data = {
             "name": name,
             "phone": phone,
@@ -86,7 +82,6 @@ def register_page(root):
             "password": password,
         }
 
-        # 서버에 회원가입 요청
         try:
             response = requests.post("http://localhost:8000/register", json=data)
             if response.status_code == 200:

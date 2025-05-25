@@ -77,6 +77,7 @@ app.include_router(mainpage_router, tags=["메인"])
 app.include_router(mypage_router, prefix="/mypage", tags=["마이페이지"])
 app.include_router(manager_router, prefix="/admin", tags=["관리자"])
 
+
 # 서버 실행
 if __name__ == "__main__":
     uvicorn.run("app:app", host="0.0.0.0", port=8000, reload=True)
