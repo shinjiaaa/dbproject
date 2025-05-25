@@ -9,7 +9,8 @@ from datetime import datetime, timedelta, timezone
 
 router = APIRouter()
 
-# --- Pydantic Models ---
+
+# ==== Pydantic Models ====
 class BookSearch(BaseModel):
     book_id: int
     book_title: Optional[str] = None
@@ -21,13 +22,21 @@ class BookSearch(BaseModel):
     class Config:
         orm_mode = True
 
+
 class RentalRequest(BaseModel):
     user_id: int
 
-# --- 도서 리스트 조회 ---
+
+# ==== 도서 리스트 조회 ====
 @router.get("/books_list", response_model=List[BookSearch])
 def get_books(db: Session = Depends(get_db)):
-    books = db.query(Book).filter(or_(Book.is_deleted == False, Book.is_deleted == None)).all()
+    books = (
+        db.query(Book)
+        .filter(or_(Book.is_deleted == False, Book.is_deleted == None))
+        .all()
+    )
+
+    # 모든 도서의 대여 상태를 가져오기 위해 Service 테이블과 조인
     return [
         {
             "book_id": book.book_id,
@@ -35,25 +44,32 @@ def get_books(db: Session = Depends(get_db)):
             "author": book.author,
             "year": book.year,
             "library_location": book.library_location,
-            "rental_status": book.rental_status
+            "rental_status": book.rental_status,
         }
         for book in books
     ]
 
-# --- 도서 검색 ---
+
+# ==== 도서 검색 ====
 @router.get("/search_books", response_model=List[BookSearch])
 def search_books(
     book_title: Optional[str] = None,
     author: Optional[str] = None,
-    db: Session = Depends(get_db)
+    db: Session = Depends(get_db),
 ):
-    query = db.query(Book).filter(or_(Book.is_deleted == False, Book.is_deleted == None))
+    # 검색 조건에 따라 도서 리스트를 필터링
+    query = db.query(Book).filter(
+        or_(Book.is_deleted == False, Book.is_deleted == None)
+    )
+    # 검색어가 주어진 경우에만 필터링
     if book_title:
         query = query.filter(Book.book_title.ilike(f"%{book_title}%"))
+
     if author:
         query = query.filter(Book.author.ilike(f"%{author}%"))
     books = query.all()
 
+    # 모든 도서의 대여 상태를 가져오기 위해 Service 테이블과 조인
     return [
         {
             "book_id": book.book_id,
@@ -61,43 +77,58 @@ def search_books(
             "author": book.author,
             "year": book.year,
             "library_location": book.library_location,
-            "rental_status": book.rental_status
+            "rental_status": book.rental_status,
         }
         for book in books
     ]
 
-# --- 도서 상세 정보 ---
+
+# ==== 도서 상세 정보 ====
 @router.get("/book/{book_id}", response_model=BookSearch)
 def get_book_detail(book_id: int, db: Session = Depends(get_db)):
-    book = db.query(Book).filter(
-        Book.book_id == book_id,
-        or_(Book.is_deleted == False, Book.is_deleted == None)
-    ).first()
+    book = (
+        # 도서 ID로 도서를 조회하고, 삭제되지 않은 도서만 필터링
+        db.query(Book)
+        .filter(
+            Book.book_id == book_id,
+            or_(
+                Book.is_deleted == False, Book.is_deleted == None
+            ),  # 삭제되지 않은 도서만 조회
+        )
+        .first()
+    )
 
+    # 도서가 존재하지 않으면 404
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
 
+    # 도서 정보 반환
     return {
         "book_id": book.book_id,
         "book_title": book.book_title,
         "author": book.author,
         "year": book.year,
         "library_location": book.library_location,
-        "rental_status": book.rental_status
+        "rental_status": book.rental_status,
     }
 
-# --- 도서 대여 ---
+
+# ==== 도서 대여 ====
 @router.post("/rental_book/{book_id}")
 def rental_book(book_id: int, req: RentalRequest, db: Session = Depends(get_db)):
-    book = db.query(Book).filter(
-        Book.book_id == book_id,
-        or_(Book.is_deleted == False, Book.is_deleted == None)
-    ).first()
+    book = (  # 도서 ID로 도서를 조회하고, 삭제되지 않은 도서만 필터링
+        db.query(Book)
+        .filter(
+            Book.book_id == book_id,
+            or_(Book.is_deleted == False, Book.is_deleted == None),
+        )
+        .first()
+    )
 
     if not book:
         raise HTTPException(status_code=404, detail="존재하지 않는 도서입니다.")
 
-    if book.rental_status is False:  # ✅ False만 막고 None은 허용
+    if book.rental_status is False:  # False만 막고 None은 허용
         raise HTTPException(status_code=400, detail="이미 대여된 책입니다.")
 
     book.rental_status = False  # 대출 중으로 상태 변경
@@ -107,8 +138,8 @@ def rental_book(book_id: int, req: RentalRequest, db: Session = Depends(get_db))
         user_id=req.user_id,
         book_id=book_id,
         rented_at=now,
-        due_date=now + timedelta(days=14),
-        extension_count=0
+        due_date=now + timedelta(days=14),  # 2주 후 반납 예정
+        extension_count=0,
     )
     db.add(new_service)
     db.add(book)  # 대출 상태 변경된 book 객체도 추가

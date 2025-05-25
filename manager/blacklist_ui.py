@@ -2,8 +2,10 @@ import tkinter as tk
 from tkinter import messagebox
 import requests
 
-BACKEND_URL = "http://127.0.0.1:8000"  
+BACKEND_URL = "http://127.0.0.1:8000"
 
+
+# 블랙리스트 불러오기
 def fetch_blacklist():
     try:
         response = requests.get(f"{BACKEND_URL}/blacklist")
@@ -13,6 +15,8 @@ def fetch_blacklist():
         print("블랙리스트 불러오기 실패:", e)
         return []
 
+
+# 블랙리스트 해지
 def remove_from_blacklist(user_id, refresh_callback):
     try:
         response = requests.post(f"{BACKEND_URL}/blacklist/remove/{user_id}")
@@ -22,7 +26,10 @@ def remove_from_blacklist(user_id, refresh_callback):
     except requests.exceptions.RequestException as e:
         messagebox.showerror("에러", f"해지 실패: {e}")
 
+
+# 블랙리스트 UI 표시
 def show_blacklist_ui(root, go_back_callback=None):
+    # 위젯 초기화
     for widget in root.winfo_children():
         widget.destroy()
 
@@ -35,10 +42,14 @@ def show_blacklist_ui(root, go_back_callback=None):
     table_frame = tk.Frame(root)
     table_frame.pack(padx=10, pady=10)
 
+    # 테이블 헤더
     headers = ["사용자 ID", "이름", "전화번호", "블랙리스트 등록일자", "해지"]
     for i, h in enumerate(headers):
-        tk.Label(table_frame, text=h, font=("Arial", 11, "bold"), width=18).grid(row=0, column=i, padx=5, pady=5)
+        tk.Label(table_frame, text=h, font=("Arial", 11, "bold"), width=18).grid(
+            row=0, column=i, padx=5, pady=5
+        )
 
+    # 테이블 내용 갱신
     def refresh_table():
         # 기존 테이블 내용 삭제 (첫 번째 row 제외)
         for widget in table_frame.winfo_children():
@@ -47,19 +58,35 @@ def show_blacklist_ui(root, go_back_callback=None):
 
         blacklist = fetch_blacklist()
 
+        # 블랙리스트가 비어있는 경우
         for row_idx, user in enumerate(blacklist, start=1):
-            tk.Label(table_frame, text=user.get("user_id", "-")).grid(row=row_idx, column=0, padx=5, pady=5)
-            tk.Label(table_frame, text=user.get("name", "-")).grid(row=row_idx, column=1, padx=5, pady=5)
-            tk.Label(table_frame, text=user.get("phone", "-")).grid(row=row_idx, column=2, padx=5, pady=5)
-            tk.Label(table_frame, text=user.get("blacklisted_by", "-")).grid(row=row_idx, column=3, padx=5, pady=5)
+            tk.Label(table_frame, text=user.get("user_id", "-")).grid(
+                row=row_idx, column=0, padx=5, pady=5
+            )
+            tk.Label(table_frame, text=user.get("name", "-")).grid(
+                row=row_idx, column=1, padx=5, pady=5
+            )
+            tk.Label(table_frame, text=user.get("phone", "-")).grid(
+                row=row_idx, column=2, padx=5, pady=5
+            )
+            tk.Label(table_frame, text=user.get("blacklisted_by", "-")).grid(
+                row=row_idx, column=3, padx=5, pady=5
+            )
 
             tk.Button(
                 table_frame,
                 text="해지",
-                command=lambda uid=user["user_id"]: remove_from_blacklist(uid, refresh_table)
+                command=lambda uid=user["user_id"]: remove_from_blacklist(
+                    uid, refresh_table
+                ),  # 해지 버튼 클릭 시
             ).grid(row=row_idx, column=4, padx=5, pady=5)
 
     refresh_table()
 
     # 뒤로 가기 버튼
-    tk.Button(root, text="뒤로 가기", width=12, command=lambda: go_back_callback() if go_back_callback else root.destroy()).pack(pady=15)
+    tk.Button(
+        root,
+        text="뒤로 가기",
+        width=12,
+        command=lambda: go_back_callback() if go_back_callback else root.destroy(),
+    ).pack(pady=15)

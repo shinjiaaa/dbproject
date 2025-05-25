@@ -2,37 +2,47 @@ import tkinter as tk
 from tkinter import ttk, messagebox
 import requests
 
+
 def fetch_books(query=None):
-   # """서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)"""
+    # 서버에서 삭제되지 않은 책 목록 가져오기 (검색어가 있으면 필터링)
     try:
-        url = "http://localhost:8000/books_list"
+        url = "http://localhost:8000/books_list"  # 도서 목록 API URL
         params = {}
         if query:
             params["query"] = query  # 서버 API에 따라 쿼리 파라미터 이름은 조정 필요
         response = requests.get(url, params=params)
-        if response.status_code == 200:
+        if response.status_code == 200:  # 도서 목록 불러오기 성공
             return response.json()
         else:
-            messagebox.showerror("오류", "도서 목록을 불러오는 데 실패했습니다.")
+            messagebox.showerror(
+                "오류", "도서 목록을 불러오는 데 실패했습니다."
+            )  # 도서 목록 불러오기 실패 메시지
             return []
     except Exception as e:
-        messagebox.showerror("서버 연결 오류", str(e))
+        messagebox.showerror("서버 연결 오류", str(e))  # 서버 연결 실패 메시지
         return []
 
+
 def delete_book(book_id):
-  #  """서버에 삭제 요청"""
+    #  서버에 삭제 요청
     try:
-        response = requests.delete(f"http://localhost:8000/admin/book/{book_id}")
+        response = requests.delete(
+            f"http://localhost:8000/admin/book/{book_id}"
+        )  # 도서 삭제 API 호출
         if response.status_code == 200:
             messagebox.showinfo("성공", response.json()["message"])
             return True
         else:
-            messagebox.showerror("실패", response.json().get("detail", "삭제 실패"))
+            messagebox.showerror(
+                "실패", response.json().get("detail", "삭제 실패")
+            )  # 삭제 실패 메시지
             return False
     except Exception as e:
-        messagebox.showerror("오류", str(e))
+        messagebox.showerror("오류", str(e))  # 서버 연결 실패 메시지
         return False
 
+
+# 도서 삭제 UI
 def show_delete_book_ui(root):
     window = tk.Toplevel(root)
     window.title("🗑 도서 삭제")
@@ -50,6 +60,7 @@ def show_delete_book_ui(root):
 
     columns = ("도서 ID", "제목", "저자", "출판연도", "위치", "대출상태")
 
+    # 트리뷰 생성
     tree = ttk.Treeview(window, columns=columns, show="headings", height=15)
     for col in columns:
         tree.heading(col, text=col)
@@ -57,7 +68,7 @@ def show_delete_book_ui(root):
     tree.pack(pady=10)
 
     def load_books(query=None):
-    # 기존 목록 클리어
+        # 기존 목록 클리어
         for row in tree.get_children():
             tree.delete(row)
             # 책 목록 불러오기
@@ -65,34 +76,43 @@ def show_delete_book_ui(root):
         for book in books:
             rental_value = book.get("rental_status")
             status = "대출 중" if rental_value else "대출 가능"
-            tree.insert("", "end", values=(
-                book.get("book_id", ""),
-                book.get("book_title", ""),
-                book.get("author", ""),
-                book.get("year", ""),
-                book.get("library_location", ""),
-                status
-            ))
+            # 책 정보를 트리뷰에 삽입
+            tree.insert(
+                "",
+                "end",
+                values=(
+                    book.get("book_id", ""),
+                    book.get("book_title", ""),
+                    book.get("author", ""),
+                    book.get("year", ""),
+                    book.get("library_location", ""),
+                    status,
+                ),
+            )
 
-
+    # 검색 버튼 동작
     def on_search():
         query = search_var.get().strip()
         load_books(query if query else None)
 
+    # 삭제 버튼 동작
     def delete_selected():
         selected_item = tree.selection()
         if not selected_item:
             messagebox.showwarning("경고", "삭제할 책을 선택해주세요.")
             return
 
+        # 선택한 책 정보 가져오기
         book_values = tree.item(selected_item)["values"]
         book_id = book_values[0]
         rental_status = book_values[5]
 
+        # 대출 중일 경우 삭제 불가
         if rental_status == "대출 중":
             messagebox.showerror("실패", "대출 중인 도서는 삭제할 수 없습니다.")
             return
 
+        # 삭제 확인
         if delete_book(book_id):
             tree.delete(selected_item)
 
