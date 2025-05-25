@@ -9,17 +9,20 @@ from datetime import date
 
 router = APIRouter()
 
+
 class BookData(BaseModel):
     book_title: str
     author: str
     year: int
-    rental_status: bool = True   
+    rental_status: bool = True
     library_location: str
     is_deleted: bool = False
+
 
 class BlacklistData(BaseModel):
     user_id: int
     blacklist_date: int
+
 
 # 도서 추가
 @router.post("/book")
@@ -31,13 +34,14 @@ async def add_book(data: BookData, db: Session = Depends(get_db)):
             year=data.year,
             library_location=data.library_location,
             rental_status=data.rental_status,
-            is_deleted=data.is_deleted
+            is_deleted=data.is_deleted,
         )
         db.add(new_book)
         db.commit()
         return {"message": "도서 등록 완료"}
     except Exception as e:
         raise HTTPException(status_code=400, detail=str(e))
+
 
 # 도서 삭제
 @router.delete("/book/{book_id}")
@@ -49,6 +53,7 @@ async def delete_book(book_id: int, db: Session = Depends(get_db)):
     db.commit()
     return {"message": "도서 삭제 완료"}
 
+
 # 도서 반납
 # 도서 반납
 @router.post("/return_book/{book_id}")
@@ -57,10 +62,14 @@ def return_book(book_id: int, db: Session = Depends(get_db)):
     from datetime import datetime
 
     # 1. 도서 확인 (삭제되지 않은 것만)
-    book = db.query(Book).filter(
-        Book.book_id == book_id,
-        or_(Book.is_deleted == False, Book.is_deleted == None)
-    ).first()
+    book = (
+        db.query(Book)
+        .filter(
+            Book.book_id == book_id,
+            or_(Book.is_deleted == False, Book.is_deleted == None),
+        )
+        .first()
+    )
 
     if not book:
         raise HTTPException(status_code=404, detail="도서를 찾을 수 없습니다.")
@@ -70,10 +79,12 @@ def return_book(book_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="이미 반납된 도서입니다.")
 
     # 3. 가장 최근 대출 기록 가져오기
-    service = db.query(Service).filter(
-        Service.book_id == book_id,
-        Service.returned_at == None
-    ).order_by(Service.rented_at.desc()).first()
+    service = (
+        db.query(Service)
+        .filter(Service.book_id == book_id, Service.returned_at == None)
+        .order_by(Service.rented_at.desc())
+        .first()
+    )
 
     if not service:
         raise HTTPException(status_code=404, detail="대출 기록을 찾을 수 없습니다.")
@@ -86,14 +97,12 @@ def return_book(book_id: int, db: Session = Depends(get_db)):
 
     return {"message": "도서가 성공적으로 반납되었습니다."}
 
+
 # 📌 도서 목록 전체 조회
 @router.get("/books")
 def get_books(db: Session = Depends(get_db)):
     books = db.query(Book).filter(Book.is_deleted == False).all()
     return books
-
-
-
 
 
 # 고객 정보 조회
@@ -102,11 +111,13 @@ async def get_users(db: Session = Depends(get_db)):
     users = db.query(User).all()
     return users
 
+
 # 블랙리스트 조회
 @router.get("/blacklist")
 async def get_blacklist(db: Session = Depends(get_db)):
     blacklist = db.query(User).filter(User.blacklist == True).all()
     return blacklist
+
 
 # 블랙리스트 추가
 # @router.post("/blacklist")
@@ -118,6 +129,7 @@ async def get_blacklist(db: Session = Depends(get_db)):
 #    db.commit()
 #    return {"message": "블랙리스트 추가 완료"}
 
+
 # 블랙리스트 해지
 @router.post("/blacklist/remove/{user_id}")
 async def remove_blacklist(user_id: int, db: Session = Depends(get_db)):
@@ -125,28 +137,38 @@ async def remove_blacklist(user_id: int, db: Session = Depends(get_db)):
     if not user:
         raise HTTPException(status_code=404, detail="사용자를 찾을 수 없습니다.")
     if not user.blacklist:
-        raise HTTPException(status_code=400, detail="이미 블랙리스트에 등록되어 있지 않습니다.")
+        raise HTTPException(
+            status_code=400, detail="이미 블랙리스트에 등록되어 있지 않습니다."
+        )
     user.blacklist = False
     db.commit()
     return {"message": "블랙리스트 해지 완료"}
 
+
 # 블랙리스트 등록
 @router.post("/blacklist/auto")
 def auto_blacklist(db: Session = Depends(get_db)):
-    late_users = db.query(Service.user_id)\
-        .filter(Service.return_date > Service.due_date)\
-        .group_by(Service.user_id)\
-        .having(func.count() >= 2)\
+    late_users = (
+        db.query(Service.user_id)
+        .filter(Service.return_date > Service.due_date)
+        .group_by(Service.user_id)
+        .having(func.count() >= 2)
         .all()
+    )
 
-     # 각 사용자에 대해 블랙리스트 처리
+    # 각 사용자에 대해 블랙리스트 처리
     updated_users = []
     for user in late_users:
-        user_id = user.user_id if hasattr(user, "user_id") else user[0]  # 튜플일 경우 대비
+        user_id = (
+            user.user_id if hasattr(user, "user_id") else user[0]
+        )  # 튜플일 경우 대비
         u = db.query(User).filter(User.user_id == user_id).first()
         if u and not u.blacklist:
             u.blacklist = True
             updated_users.append(user_id)
 
     db.commit()
-    return {"message": f"자동 블랙리스트 등록 완료: {len(updated_users)}명", "등록된 사용자": updated_users}
+    return {
+        "message": f"자동 블랙리스트 등록 완료: {len(updated_users)}명",
+        "등록된 사용자": updated_users,
+    }
