@@ -4,11 +4,9 @@ from sqlalchemy import or_
 from models import Service, User, Book
 from database import get_db
 from pydantic import BaseModel
-from sqlalchemy import func
-from datetime import datetime, date
+from datetime import datetime
 
 router = APIRouter()
-
 
 # Pydantic 모델 정의
 class BookData(BaseModel):
@@ -95,6 +93,7 @@ def return_book(book_id: int, db: Session = Depends(get_db)):
             user.overdue_count += 1
             if user.overdue_count >= 3:
                 user.blacklist = True
+                user.blacklist_date = today  # 블랙리스트 등록일 기록
 
     db.commit()
     return {"message": "도서가 성공적으로 반납되었습니다."}
@@ -131,5 +130,6 @@ async def remove_blacklist(user_id: int, db: Session = Depends(get_db)):
         raise HTTPException(status_code=400, detail="이미 블랙리스트에 등록되어 있지 않습니다.")
 
     user.blacklist = False
+    user.blacklist_date = None  # 해지 시 날짜 초기화
     db.commit()
     return {"message": "블랙리스트 해지 완료"}

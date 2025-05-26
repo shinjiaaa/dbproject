@@ -34,6 +34,7 @@ def show_blacklist_ui(root, go_back_callback=None):
         widget.destroy()
 
     root.title("블랙리스트 관리")
+    root.geometry("1000x600")
 
     # 타이틀
     tk.Label(root, text="블랙리스트 관리", font=("Arial", 18)).pack(pady=10)
@@ -69,7 +70,7 @@ def show_blacklist_ui(root, go_back_callback=None):
             tk.Label(table_frame, text=user.get("phone", "-")).grid(
                 row=row_idx, column=2, padx=5, pady=5
             )
-            tk.Label(table_frame, text=user.get("blacklisted_by", "-")).grid(
+            tk.Label(table_frame, text=user.get("blacklist_date", "-")).grid(
                 row=row_idx, column=3, padx=5, pady=5
             )
 
