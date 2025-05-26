@@ -38,18 +38,16 @@ def get_my_loans(
     return loan_details
 
 
-# 2. 대출 연장 API
 @router.post("/extend_rental/{service_id}")
 def extend_loan(
-    service_id: int,  # 연장할 대출 건의 ID (path parameter)
-    extension_days: int = Query(...),  # 연장할 일수 (쿼리 파라미터)
-    user_id: int = Query(...),         # 사용자 ID (쿼리 파라미터)
+    service_id: int,
+    extension_days: int = Query(...),
+    user_id: int = Query(...),
     db: Session = Depends(get_db)
 ):
     # 사용자와 대출 ID로 대출 기록 찾기
     service = db.query(Service).filter(Service.service_id == service_id, Service.user_id == user_id).first()
 
-    # 대출 기록이 없으면 404 에러
     if not service:
         raise HTTPException(status_code=404, detail="대출 기록을 찾을 수 없습니다.")
 
@@ -57,11 +55,16 @@ def extend_loan(
     if service.returned_at is not None:
         raise HTTPException(status_code=400, detail="이미 반납된 책은 연장할 수 없습니다.")
 
-    # 대출 기간 연장: 기존 due_date에 연장 일수 더하기
+    # 연장 횟수 제한 (2회까지만 가능)
+    if service.extension_count is not None and service.extension_count >= 2:
+        raise HTTPException(status_code=400, detail="대출 연장은 최대 2회까지만 가능합니다.")
+
+    # 대출 기간 연장
     service.due_date += timedelta(days=extension_days)
+    service.extension_count = (service.extension_count or 0) + 1  # 연장 횟수 1 증가
     db.commit()
 
-    # 성공 메시지 반환
     return {
-        "message": f"대출이 {extension_days}일 연장되었습니다. 새로운 반납일: {service.due_date}"
+        "message": f"대출이 {extension_days}일 연장되었습니다. (연장 {service.extension_count}/2회)"
     }
+

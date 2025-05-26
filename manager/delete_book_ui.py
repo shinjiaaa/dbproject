@@ -22,7 +22,8 @@ def fetch_books(query=None):
 def delete_book(book_id):
     """서버에 삭제 요청"""
     try:
-        response = requests.post("http://localhost:8000/delete_book", json={"book_id": book_id})
+        url = f"http://localhost:8000/admin/book/{book_id}"  # URL에 book_id 넣기
+        response = requests.delete(url)  # DELETE 메서드로 요청
         if response.status_code == 200:
             messagebox.showinfo("성공", response.json()["message"])
             return True
